@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: pcos-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - pcos-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: pcos-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=PCOS-XAI
+      - ENVIRONMENT=production
+      - MONGO_URI=mongodb://mongodb:27017
+      - MONGO_DB=pcos_xai
+      - JWT_SECRET=pcos-ai-default-jwt-secret-key-change-in-production
+      - MAX_UPLOAD_MB=10
+      - ULTRASOUND_PCOS_CLASS_INDEX=1
+    depends_on:
+      - mongodb
+    volumes:
+      - backend_uploads:/app/backend/uploads
+      - backend_reports:/app/backend/generated_reports
+    networks:
+      - pcos-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pcos-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - pcos-network
+
+networks:
+  pcos-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  backend_uploads:
+  backend_reports:

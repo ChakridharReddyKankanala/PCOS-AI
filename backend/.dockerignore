@@ -1,0 +1,10 @@
+__pycache__
+*.pyc
+.venv
+venv
+uploads/*
+!uploads/.gitkeep
+generated_reports/*
+!generated_reports/.gitkeep
+.vscode
+.idea
